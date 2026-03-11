@@ -52,8 +52,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "HN Afterglow — A Modern Hacker News Experience",
-    description:
-      "Experience Hacker News with a premium, focused interface and real-time updates.",
+    description: "Experience Hacker News with a premium, focused interface and real-time updates.",
     url: "https://hackernews.coreyburns.ca",
     siteName: "HN Afterglow",
     locale: "en_US",
@@ -62,8 +61,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "HN Afterglow — A Modern Hacker News Experience",
-    description:
-      "Experience Hacker News with a premium, focused interface and real-time updates.",
+    description: "Experience Hacker News with a premium, focused interface and real-time updates.",
     creator: "@coreyburns",
   },
   robots: {
@@ -92,9 +90,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_20%_15%,#1e2b52_0%,#090d1a_38%,#020306_85%)] text-[#e8eeff] selection:bg-cyan-300/30">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-24 top-10 h-80 w-80 rounded-full bg-indigo-500/25 blur-[120px]" />
@@ -111,9 +107,7 @@ export default function RootLayout({
                 <p className="mb-1 text-xs uppercase tracking-[0.32em] text-cyan-100/70">
                   Hackernews Relay
                 </p>
-                <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                  HN Afterglow
-                </h1>
+                <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">HN Afterglow</h1>
               </div>
               <Link
                 href="/"

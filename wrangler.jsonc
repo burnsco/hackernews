@@ -1,17 +1,17 @@
 {
-	"$schema": "./node_modules/wrangler/config-schema.json",
-	"main": ".open-next/worker.js",
-	"name": "hackernews",
-	"compatibility_date": "2026-02-06",
-	"compatibility_flags": ["nodejs_compat"],
-	"assets": {
-		"directory": ".open-next/assets",
-		"binding": "ASSETS"
-	},
-	"routes": [
-		{
-			"pattern": "hackernews.coreyburns.ca",
-			"custom_domain": true
-		}
-	]
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "hackernews",
+  "compatibility_date": "2026-02-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "routes": [
+    {
+      "pattern": "hackernews.coreyburns.ca",
+      "custom_domain": true,
+    },
+  ],
 }

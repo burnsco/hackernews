@@ -3,15 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  memo,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Suspense, useCallback, useEffect, memo, useMemo, useRef, useState } from "react";
 
 const API_BASE = "https://hacker-news.firebaseio.com/v0";
 const MAX_FRONT_PAGE_STORIES = 30;
@@ -23,15 +15,7 @@ const FEED_CACHE_TTL_MS = 60_000;
 const USER_CACHE_TTL_MS = 5 * 60_000;
 const POST_CACHE_TTL_MS = 2 * 60_000;
 
-type Section =
-  | "top"
-  | "new"
-  | "past"
-  | "comments"
-  | "ask"
-  | "show"
-  | "jobs"
-  | "submit";
+type Section = "top" | "new" | "past" | "comments" | "ask" | "show" | "jobs" | "submit";
 
 type HNItem = {
   id: number;
@@ -110,11 +94,7 @@ function normalizeSection(value: string | null | undefined): Section {
   return "top";
 }
 
-function readTimedCache<K, T>(
-  cache: Map<K, TimedValue<T>>,
-  key: K,
-  maxAgeMs: number,
-): T | null {
+function readTimedCache<K, T>(cache: Map<K, TimedValue<T>>, key: K, maxAgeMs: number): T | null {
   const entry = cache.get(key);
   if (!entry) return null;
   if (Date.now() - entry.createdAt > maxAgeMs) {
@@ -136,26 +116,14 @@ async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
   return (await response.json()) as T;
 }
 
-async function fetchItemById(
-  id: number,
-  signal: AbortSignal,
-): Promise<HNItem | null> {
-  const item = await fetchJson<HNItem | null>(
-    `${API_BASE}/item/${id}.json`,
-    signal,
-  );
+async function fetchItemById(id: number, signal: AbortSignal): Promise<HNItem | null> {
+  const item = await fetchJson<HNItem | null>(`${API_BASE}/item/${id}.json`, signal);
   if (!item || typeof item.id !== "number") return null;
   return item;
 }
 
-async function fetchUserById(
-  id: string,
-  signal: AbortSignal,
-): Promise<HNUser | null> {
-  const user = await fetchJson<HNUser | null>(
-    `${API_BASE}/user/${id}.json`,
-    signal,
-  );
+async function fetchUserById(id: string, signal: AbortSignal): Promise<HNUser | null> {
+  const user = await fetchJson<HNUser | null>(`${API_BASE}/user/${id}.json`, signal);
   if (!user || typeof user.id !== "string") return null;
   return user;
 }
@@ -191,6 +159,11 @@ function getDomain(url?: string): string {
   }
 }
 
+function scrollToComments() {
+  const commentsElement = document.getElementById("comments");
+  commentsElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function toPlainText(value?: string): string {
   if (!value) return "";
   const cached = textCache.get(value);
@@ -199,8 +172,7 @@ function toPlainText(value?: string): string {
   let normalized = "";
   if (typeof window !== "undefined") {
     const doc = new DOMParser().parseFromString(value, "text/html");
-    const text =
-      (doc.body as HTMLElement).innerText || doc.body.textContent || "";
+    const text = (doc.body as HTMLElement).innerText || doc.body.textContent || "";
     normalized = text.replace(/\n{3,}/g, "\n\n").trim();
   } else {
     normalized = value
@@ -274,20 +246,12 @@ async function fetchFeedPage(
   return { items: pageItems, nextFetchIndex: cursor };
 }
 
-async function fetchStoryIds(
-  section: Section,
-  signal: AbortSignal,
-): Promise<number[]> {
+async function fetchStoryIds(section: Section, signal: AbortSignal): Promise<number[]> {
   if (section === "submit") return [];
 
   if (section === "comments") {
-    const updates = await fetchJson<{ items?: number[] }>(
-      `${API_BASE}/updates.json`,
-      signal,
-    );
-    return (updates.items ?? []).filter(
-      (id): id is number => typeof id === "number",
-    );
+    const updates = await fetchJson<{ items?: number[] }>(`${API_BASE}/updates.json`, signal);
+    return (updates.items ?? []).filter((id): id is number => typeof id === "number");
   }
 
   const endpoint =
@@ -301,10 +265,7 @@ async function fetchStoryIds(
             ? "jobstories"
             : "topstories";
 
-  const storyIds = await fetchJson<number[]>(
-    `${API_BASE}/${endpoint}.json`,
-    signal,
-  );
+  const storyIds = await fetchJson<number[]>(`${API_BASE}/${endpoint}.json`, signal);
   return storyIds.filter((id): id is number => typeof id === "number");
 }
 
@@ -320,18 +281,13 @@ async function buildCommentTree(
   );
 
   const validComments = results.filter(
-    (item): item is HNItem =>
-      !!item && item.type === "comment" && !item.dead && !item.deleted,
+    (item): item is HNItem => !!item && item.type === "comment" && !item.dead && !item.deleted,
   );
 
   const nodes = await Promise.all(
     validComments.map(async (item) => {
-      const children = await buildCommentTree(
-        item.kids ?? [],
-        signal,
-        depth + 1,
-      );
-      return { ...item, children };
+      const children = await buildCommentTree(item.kids ?? [], signal, depth + 1);
+      return Object.assign({}, item, { children }) as HNCommentNode;
     }),
   );
   return nodes;
@@ -401,14 +357,11 @@ const StoryListItem = memo(function StoryListItem({
   onOpenDetail,
 }: StoryListItemProps) {
   const isComment = item.type === "comment";
-  const title = isComment
-    ? `Comment by ${item.by ?? "unknown"}`
-    : (item.title ?? "Untitled story");
+  const title = isComment ? `Comment by ${item.by ?? "unknown"}` : (item.title ?? "Untitled story");
   const snippet = isComment ? toPlainText(item.text).slice(0, 180) : "";
   const detailPath = `/?post=${item.id}&from=${section}`;
   const externalUrl = item.url;
-  const rank =
-    section === "past" ? index + 1 + MAX_FRONT_PAGE_STORIES : index + 1;
+  const rank = section === "past" ? index + 1 + MAX_FRONT_PAGE_STORIES : index + 1;
 
   return (
     <motion.li
@@ -452,9 +405,7 @@ const StoryListItem = memo(function StoryListItem({
           ) : (
             <h4 className="text-lg font-semibold text-white">{title}</h4>
           )}
-          {snippet ? (
-            <p className="mt-2 text-sm text-slate-300/85">{snippet}</p>
-          ) : null}
+          {snippet ? <p className="mt-2 text-sm text-slate-300/85">{snippet}</p> : null}
           <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-300/85">
             <span>{(item.score ?? 0).toLocaleString()} points</span>
             <span aria-hidden>•</span>
@@ -535,12 +486,7 @@ function FeedView({ section }: { section: Section }) {
         if (controller.signal.aborted) return;
 
         const startIndex = section === "past" ? MAX_FRONT_PAGE_STORIES : 0;
-        const firstPage = await fetchFeedPage(
-          allIds,
-          section,
-          startIndex,
-          controller.signal,
-        );
+        const firstPage = await fetchFeedPage(allIds, section, startIndex, controller.signal);
         if (controller.signal.aborted) return;
 
         setIds(allIds);
@@ -557,9 +503,7 @@ function FeedView({ section }: { section: Section }) {
         setItems([]);
         setLoadState("error");
         setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Failed to load Hacker News feed.",
+          error instanceof Error ? error.message : "Failed to load Hacker News feed.",
         );
       } finally {
         if (requestRef.current === controller) {
@@ -611,12 +555,7 @@ function FeedView({ section }: { section: Section }) {
     setLoadingMore(true);
 
     try {
-      const nextPage = await fetchFeedPage(
-        ids,
-        section,
-        nextFetchIndex,
-        controller.signal,
-      );
+      const nextPage = await fetchFeedPage(ids, section, nextFetchIndex, controller.signal);
       if (controller.signal.aborted) return;
 
       const seen = new Set(items.map((item) => item.id));
@@ -668,18 +607,11 @@ function FeedView({ section }: { section: Section }) {
 
       <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border rounded-3xl border-cyan-100/20 bg-slate-950/95">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/70">
-            Realtime Feed
-          </p>
-          <h3 className="mt-1 text-2xl font-semibold text-cyan-50">
-            {feedHeading}
-          </h3>
+          <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/70">Realtime Feed</p>
+          <h3 className="mt-1 text-2xl font-semibold text-cyan-50">{feedHeading}</h3>
         </div>
         <div className="flex items-center gap-3">
-          <p
-            className="text-xs uppercase tracking-[0.2em] text-slate-300/80"
-            aria-live="polite"
-          >
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-300/80" aria-live="polite">
             {statusCopy}
           </p>
           <button
@@ -695,12 +627,9 @@ function FeedView({ section }: { section: Section }) {
 
       {section === "submit" ? (
         <div className="p-5 border rounded-2xl border-white/20 bg-slate-900/95">
-          <h4 className="text-lg font-semibold text-white">
-            Submit to HN Afterglow
-          </h4>
+          <h4 className="text-lg font-semibold text-white">Submit to HN Afterglow</h4>
           <p className="mt-2 text-sm text-slate-300">
-            This is the local submit page placeholder for your clone. We can
-            wire storage next.
+            This is the local submit page placeholder for your clone. We can wire storage next.
           </p>
         </div>
       ) : null}
@@ -793,9 +722,7 @@ function CommentTree({
         type="button"
         className="absolute left-0 top-0 bottom-0 w-1 cursor-pointer transition-colors hover:bg-cyan-400 group border-none bg-transparent p-0 outline-none"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        aria-label={
-          isCollapsed ? "Expand comment tree" : "Collapse comment tree"
-        }
+        aria-label={isCollapsed ? "Expand comment tree" : "Collapse comment tree"}
       >
         <div className="absolute inset-y-0 left-0 w-full bg-white/5 group-hover:bg-cyan-400/30" />
       </button>
@@ -829,13 +756,11 @@ function CommentTree({
           marginTop: isCollapsed ? 0 : 8,
         }}
         transition={
-          shouldReduceMotion
-            ? { duration: 0 }
-            : { duration: 0.25, ease: [0.4, 0, 0.2, 1] }
+          shouldReduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.4, 0, 0.2, 1] }
         }
         className="overflow-hidden"
       >
-        <p className="w-full min-w-0 text-base leading-relaxed text-slate-100/95 break-words whitespace-pre-wrap">
+        <p className="w-full min-w-0 text-base leading-relaxed text-slate-100/95 wrap-break-word whitespace-pre-wrap">
           {commentText}
         </p>
 
@@ -855,29 +780,18 @@ function CommentTree({
 
       {isCollapsed && node.children.length > 0 && (
         <p className="mt-1 text-[10px] uppercase tracking-widest text-cyan-100/40 font-medium">
-          {node.children.length}{" "}
-          {node.children.length === 1 ? "child" : "children"} hidden
+          {node.children.length} {node.children.length === 1 ? "child" : "children"} hidden
         </p>
       )}
     </div>
   );
 }
 
-function PostView({
-  postId,
-  fromSection,
-}: {
-  postId: number;
-  fromSection: Section;
-}) {
+function PostView({ postId, fromSection }: { postId: number; fromSection: Section }) {
   const cachedPost = readTimedCache(postCache, postId, POST_CACHE_TTL_MS);
   const [item, setItem] = useState<HNItem | null>(cachedPost?.item ?? null);
-  const [comments, setComments] = useState<HNCommentNode[]>(
-    cachedPost?.comments ?? [],
-  );
-  const [loadState, setLoadState] = useState<LoadState>(
-    cachedPost ? "ready" : "loading",
-  );
+  const [comments, setComments] = useState<HNCommentNode[]>(cachedPost?.comments ?? []);
+  const [loadState, setLoadState] = useState<LoadState>(cachedPost ? "ready" : "loading");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -889,10 +803,7 @@ function PostView({
       .then(async (nextItem) => {
         if (!nextItem) throw new Error("Post not found.");
         setItem(nextItem);
-        const nextComments = await buildCommentTree(
-          nextItem.kids ?? [],
-          controller.signal,
-        );
+        const nextComments = await buildCommentTree(nextItem.kids ?? [], controller.signal);
         setComments(nextComments);
         setLoadState("ready");
         writeTimedCache(postCache, postId, {
@@ -905,11 +816,7 @@ function PostView({
         setItem(null);
         setComments([]);
         setLoadState("error");
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Failed to load post details.",
-        );
+        setErrorMessage(error instanceof Error ? error.message : "Failed to load post details.");
       });
 
     return () => controller.abort();
@@ -917,10 +824,6 @@ function PostView({
 
   const backPath = sectionPath(fromSection);
   const storyUrl = item?.url;
-  const scrollToComments = () => {
-    const commentsElement = document.getElementById("comments");
-    commentsElement?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
   return (
     <section className="grid gap-6">
@@ -978,7 +881,7 @@ function PostView({
             </h1>
           )}
           {item.text ? (
-            <p className="w-full min-w-0 mt-4 text-lg leading-relaxed whitespace-pre-wrap text-slate-200/90 break-words">
+            <p className="w-full min-w-0 mt-4 text-lg leading-relaxed whitespace-pre-wrap text-slate-200/90 wrap-break-word">
               {toPlainText(item.text)}
             </p>
           ) : null}
@@ -1003,11 +906,7 @@ function PostView({
           </div>
         ) : (
           comments.map((comment) => (
-            <CommentTree
-              key={comment.id}
-              node={comment}
-              fromSection={fromSection}
-            />
+            <CommentTree key={comment.id} node={comment} fromSection={fromSection} />
           ))
         )}
       </section>
@@ -1015,19 +914,11 @@ function PostView({
   );
 }
 
-function UserView({
-  userId,
-  fromSection,
-}: {
-  userId: string;
-  fromSection: Section;
-}) {
+function UserView({ userId, fromSection }: { userId: string; fromSection: Section }) {
   const cacheKey = userId.toLowerCase();
   const cachedUser = readTimedCache(userCache, cacheKey, USER_CACHE_TTL_MS);
   const [user, setUser] = useState<HNUser | null>(cachedUser);
-  const [loadState, setLoadState] = useState<LoadState>(
-    cachedUser ? "ready" : "loading",
-  );
+  const [loadState, setLoadState] = useState<LoadState>(cachedUser ? "ready" : "loading");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -1046,11 +937,7 @@ function UserView({
         if (controller.signal.aborted) return;
         setUser(null);
         setLoadState("error");
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Failed to load user profile.",
-        );
+        setErrorMessage(error instanceof Error ? error.message : "Failed to load user profile.");
       });
 
     return () => controller.abort();
@@ -1082,37 +969,23 @@ function UserView({
 
       {user ? (
         <article className="p-6 border rounded-2xl border-white/15 bg-slate-900/95">
-          <p className="text-xs uppercase tracking-[0.2em] text-cyan-100/70">
-            User: {user.id}
-          </p>
+          <p className="text-xs uppercase tracking-[0.2em] text-cyan-100/70">User: {user.id}</p>
           <h1 className="mt-2 text-3xl font-semibold text-white">{user.id}</h1>
           <div className="mt-4 grid grid-cols-2 gap-4 max-w-sm">
             <div className="p-3 border rounded-xl border-white/10 bg-white/5">
-              <p className="text-[10px] uppercase tracking-widest text-cyan-100/40">
-                Karma
-              </p>
-              <p className="text-xl font-bold text-white">
-                {user.karma.toLocaleString()}
-              </p>
+              <p className="text-[10px] uppercase tracking-widest text-cyan-100/40">Karma</p>
+              <p className="text-xl font-bold text-white">{user.karma.toLocaleString()}</p>
             </div>
             <div className="p-3 border rounded-xl border-white/10 bg-white/5">
-              <p className="text-[10px] uppercase tracking-widest text-cyan-100/40">
-                Joined
-              </p>
-              <p className="text-xl font-bold text-white">
-                {formatRelativeAge(user.created)}
-              </p>
-              <p className="mt-1 text-xs text-slate-300/70">
-                {formatCalendarDate(user.created)}
-              </p>
+              <p className="text-[10px] uppercase tracking-widest text-cyan-100/40">Joined</p>
+              <p className="text-xl font-bold text-white">{formatRelativeAge(user.created)}</p>
+              <p className="mt-1 text-xs text-slate-300/70">{formatCalendarDate(user.created)}</p>
             </div>
           </div>
           {user.about ? (
             <div className="mt-6">
-              <p className="text-[10px] uppercase tracking-widest text-cyan-100/40 mb-2">
-                About
-              </p>
-              <div className="w-full min-w-0 text-lg leading-relaxed text-slate-200/90 whitespace-pre-wrap break-words">
+              <p className="text-[10px] uppercase tracking-widest text-cyan-100/40 mb-2">About</p>
+              <div className="w-full min-w-0 text-lg leading-relaxed text-slate-200/90 whitespace-pre-wrap wrap-break-word">
                 {toPlainText(user.about)}
               </div>
             </div>
@@ -1151,13 +1024,7 @@ function HackerNewsFrontPageInner() {
     if (Number.isNaN(numericPostId)) {
       return <PostView key={0} postId={0} fromSection={fromSection} />;
     }
-    return (
-      <PostView
-        key={numericPostId}
-        postId={numericPostId}
-        fromSection={fromSection}
-      />
-    );
+    return <PostView key={numericPostId} postId={numericPostId} fromSection={fromSection} />;
   }
 
   return <FeedView section={section} />;
