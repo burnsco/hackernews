@@ -22,7 +22,7 @@
         "oxlint": "^1.52.0",
         "tailwindcss": "^4.2.1",
         "typescript": "^5.9.3",
-        "wrangler": "^4.71.0",
+        "wrangler": "^4.72.0",
       },
     },
   },
