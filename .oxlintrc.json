@@ -15,5 +15,5 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [".next", "dist", "node_modules", "bun.lock"]
+  "ignorePatterns": ["dist", "node_modules", "bun.lock"]
 }

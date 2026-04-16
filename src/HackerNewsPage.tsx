@@ -1,9 +1,6 @@
-"use client";
-
 import { motion, useReducedMotion } from "framer-motion";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, memo, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, memo, useMemo, useRef, useState } from "react";
 
 const API_BASE = "https://hacker-news.firebaseio.com/v0";
 const MAX_FRONT_PAGE_STORIES = 30;
@@ -70,6 +67,8 @@ const TAB_LINKS: Array<{ id: Exclude<Section, "top">; label: string }> = [
   { id: "submit", label: "submit" },
 ];
 
+const VALID_SECTIONS = new Set<string>(TAB_LINKS.map((t) => t.id));
+
 const textCache = new Map<string, string>();
 const feedCache = new Map<Section, TimedValue<FeedSnapshot>>();
 const userCache = new Map<string, TimedValue<HNUser>>();
@@ -80,18 +79,7 @@ function sectionPath(section: Section): string {
 }
 
 function normalizeSection(value: string | null | undefined): Section {
-  if (
-    value === "new" ||
-    value === "past" ||
-    value === "comments" ||
-    value === "ask" ||
-    value === "show" ||
-    value === "jobs" ||
-    value === "submit"
-  ) {
-    return value;
-  }
-  return "top";
+  return value != null && VALID_SECTIONS.has(value) ? (value as Section) : "top";
 }
 
 function readTimedCache<K, T>(cache: Map<K, TimedValue<T>>, key: K, maxAgeMs: number): T | null {
@@ -169,22 +157,10 @@ function toPlainText(value?: string): string {
   const cached = textCache.get(value);
   if (cached) return cached;
 
-  let normalized = "";
-  if (typeof window !== "undefined") {
-    const doc = new DOMParser().parseFromString(value, "text/html");
-    const text = (doc.body as HTMLElement).innerText || doc.body.textContent || "";
-    normalized = text.replace(/\n{3,}/g, "\n\n").trim();
-  } else {
-    normalized = value
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&quot;/g, '"')
-      .replace(/&#x27;/g, "'")
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+  const doc = new DOMParser().parseFromString(value, "text/html");
+  const normalized = ((doc.body as HTMLElement).innerText || doc.body.textContent || "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
   textCache.set(value, normalized);
   return normalized;
@@ -297,7 +273,7 @@ function FeedNav({ activeSection }: { activeSection: Section }) {
   return (
     <div className="sticky top-3 z-20 flex flex-wrap gap-2 rounded-3xl border border-white/15 bg-slate-950/85 p-3 shadow-[0_14px_40px_rgba(2,6,23,0.45)] backdrop-blur">
       <Link
-        href="/"
+        to="/"
         className="rounded-full border border-cyan-100/30 bg-cyan-300/8 px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-cyan-100 transition hover:bg-cyan-300/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/60"
       >
         home
@@ -307,7 +283,7 @@ function FeedNav({ activeSection }: { activeSection: Section }) {
         return (
           <Link
             key={item.id}
-            href={sectionPath(item.id)}
+            to={sectionPath(item.id)}
             className={`rounded-full border px-4 py-1.5 text-xs uppercase tracking-[0.18em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/60 ${
               isActive
                 ? "border-cyan-100/60 bg-cyan-300/25 text-cyan-50"
@@ -412,7 +388,7 @@ const StoryListItem = memo(function StoryListItem({
             <span>
               by{" "}
               <Link
-                href={`/?user=${item.by ?? "unknown"}&from=${section}`}
+                to={`/?user=${item.by ?? "unknown"}&from=${section}`}
                 onClick={(event) => event.stopPropagation()}
                 className="hover:text-cyan-100 hover:underline"
               >
@@ -424,7 +400,7 @@ const StoryListItem = memo(function StoryListItem({
           </p>
         </div>
         <Link
-          href={detailPath}
+          to={detailPath}
           onClick={(event) => event.stopPropagation()}
           className="shrink-0 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.14em] text-slate-100 transition group-hover:border-cyan-100/35 group-hover:bg-white/10"
         >
@@ -436,7 +412,7 @@ const StoryListItem = memo(function StoryListItem({
 });
 
 function FeedView({ section }: { section: Section }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
   const reduceMotion = shouldReduceMotion ?? false;
   const [ids, setIds] = useState<number[]>([]);
@@ -535,13 +511,6 @@ function FeedView({ section }: { section: Section }) {
       block: "start",
     });
   }, [items, reduceMotion]);
-
-  const openDetail = useCallback(
-    (detailPath: string) => {
-      router.push(detailPath);
-    },
-    [router],
-  );
 
   const handleRefresh = useCallback(async () => {
     await loadFeed(true);
@@ -658,7 +627,7 @@ function FeedView({ section }: { section: Section }) {
               index={index}
               section={section}
               shouldReduceMotion={reduceMotion}
-              onOpenDetail={openDetail}
+              onOpenDetail={navigate}
             />
           ))}
         </ol>
@@ -717,7 +686,6 @@ function CommentTree({
       className="relative box-border w-full min-w-0 p-4 border rounded-xl border-white/20 bg-slate-900/98"
       style={{ marginLeft: `${indent}px` }}
     >
-      {/* Vertical 'tab' for collapsing */}
       <button
         type="button"
         className="absolute left-0 top-0 bottom-0 w-1 cursor-pointer transition-colors hover:bg-cyan-400 group border-none bg-transparent p-0 outline-none"
@@ -738,7 +706,7 @@ function CommentTree({
           </button>
           <p className="text-xs uppercase tracking-[0.18em] text-cyan-100/85">
             <Link
-              href={`/?user=${node.by ?? "unknown"}&from=${fromSection}`}
+              to={`/?user=${node.by ?? "unknown"}&from=${fromSection}`}
               className="hover:text-cyan-100 hover:underline"
             >
               {node.by ?? "unknown"}
@@ -833,7 +801,7 @@ function PostView({ postId, fromSection }: { postId: number; fromSection: Sectio
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-2xl font-semibold text-cyan-50">Post</h3>
           <Link
-            href={backPath}
+            to={backPath}
             className="rounded-full border border-cyan-100/30 bg-cyan-300/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-cyan-100 hover:bg-cyan-300/20"
           >
             Back to {fromSection}
@@ -852,7 +820,7 @@ function PostView({ postId, fromSection }: { postId: number; fromSection: Sectio
           <p className="text-xs uppercase tracking-[0.2em] text-cyan-100/70">
             {item.score ?? 0} points by{" "}
             <Link
-              href={`/?user=${item.by ?? "unknown"}&from=${fromSection}`}
+              to={`/?user=${item.by ?? "unknown"}&from=${fromSection}`}
               className="hover:text-cyan-100 hover:underline px-1"
             >
               {item.by ?? "unknown"}
@@ -953,7 +921,7 @@ function UserView({ userId, fromSection }: { userId: string; fromSection: Sectio
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-2xl font-semibold text-cyan-50">User Profile</h3>
           <Link
-            href={backPath}
+            to={backPath}
             className="rounded-full border border-cyan-100/30 bg-cyan-300/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-cyan-100 hover:bg-cyan-300/20"
           >
             Back
@@ -1001,15 +969,7 @@ function UserView({ userId, fromSection }: { userId: string; fromSection: Sectio
 }
 
 export default function HackerNewsFrontPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-[#020306]" />}>
-      <HackerNewsFrontPageInner />
-    </Suspense>
-  );
-}
-
-function HackerNewsFrontPageInner() {
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const section = normalizeSection(searchParams.get("section"));
   const postId = searchParams.get("post");
   const userId = searchParams.get("user");
