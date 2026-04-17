@@ -11,7 +11,7 @@ export function App() {
           <Route
             path="/"
             element={
-              <Suspense fallback={<div className="min-h-screen bg-[#020306]" />}>
+              <Suspense fallback={<div className="min-h-screen bg-bg" />}>
                 <HackerNewsFrontPage />
               </Suspense>
             }

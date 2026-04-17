@@ -1,33 +1,85 @@
 import { Link, Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+type Theme = "light" | "dark";
+
+function readInitialTheme(): Theme {
+  if (typeof document === "undefined") return "light";
+  const attr = document.documentElement.getAttribute("data-theme");
+  return attr === "dark" ? "dark" : "light";
+}
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState<Theme>(readInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      /* ignore */
+    }
+  }, [theme]);
+
+  const next: Theme = theme === "dark" ? "light" : "dark";
+  const label = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(next)}
+      aria-label={label}
+      title={label}
+      className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-border-strong bg-surface text-text transition hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      {theme === "dark" ? (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+          <path
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+          />
+        </svg>
+      ) : (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+    </button>
+  );
+}
 
 export function RootLayout() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_20%_15%,#1e2b52_0%,#090d1a_38%,#020306_85%)] text-[#e8eeff] selection:bg-cyan-300/30">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-24 top-10 h-80 w-80 rounded-full bg-indigo-500/25 blur-[120px]" />
-        <div className="absolute -right-20 top-1/4 h-96 w-96 rounded-full bg-teal-400/20 blur-[140px]" />
-        <div className="absolute -bottom-28 left-1/3 h-96 w-96 rounded-full bg-cyan-400/15 blur-[130px]" />
-      </div>
-
-      <div className="pointer-events-none absolute inset-0 opacity-[0.08] bg-[linear-gradient(rgba(190,201,255,0.6)_1px,transparent_1px)] bg-size-[100%_4px]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.65)_100%)]" />
-
-      <main className="relative z-10 mx-auto max-w-6xl px-6 pb-20 pt-10">
-        <header className="mb-6 flex items-center justify-between gap-4 rounded-3xl border border-white/15 bg-slate-950/65 p-4 shadow-[0_18px_40px_rgba(2,8,22,0.45)] backdrop-blur">
-          <div>
-            <p className="mb-1 text-xs uppercase tracking-[0.32em] text-cyan-100/70">
-              Hackernews Relay
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">HN Afterglow</h1>
-          </div>
-          <Link
-            to="/"
-            className="rounded-full border border-white/30 bg-white/5 px-5 py-2 text-xs uppercase tracking-[0.2em] text-white/85 transition hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/70"
-          >
-            Home
+    <div className="min-h-screen bg-bg text-text">
+      <header className="sticky top-0 z-30 border-b border-border bg-surface/90 backdrop-blur">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3">
+          <Link to="/" className="flex items-center gap-2 focus:outline-none">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-accent text-accent-fg font-bold">
+              Y
+            </span>
+            <span className="text-base font-semibold tracking-tight">HN Afterglow</span>
           </Link>
-        </header>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/"
+              className="rounded-md px-3 py-1.5 text-sm text-muted hover:text-text hover:bg-surface-2"
+            >
+              Home
+            </Link>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
 
+      <main className="mx-auto max-w-4xl px-4 py-6">
         <Outlet />
       </main>
     </div>

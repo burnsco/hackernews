@@ -271,10 +271,10 @@ async function buildCommentTree(
 
 function FeedNav({ activeSection }: { activeSection: Section }) {
   return (
-    <div className="sticky top-3 z-20 flex flex-wrap gap-2 rounded-3xl border border-white/15 bg-slate-950/85 p-3 shadow-[0_14px_40px_rgba(2,6,23,0.45)] backdrop-blur">
+    <nav className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-surface p-2">
       <Link
         to="/"
-        className="rounded-full border border-cyan-100/30 bg-cyan-300/8 px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-cyan-100 transition hover:bg-cyan-300/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/60"
+        className="rounded-md px-3 py-1.5 text-sm font-medium text-muted transition hover:bg-surface-2 hover:text-text focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         home
       </Link>
@@ -284,17 +284,17 @@ function FeedNav({ activeSection }: { activeSection: Section }) {
           <Link
             key={item.id}
             to={sectionPath(item.id)}
-            className={`rounded-full border px-4 py-1.5 text-xs uppercase tracking-[0.18em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/60 ${
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
               isActive
-                ? "border-cyan-100/60 bg-cyan-300/25 text-cyan-50"
-                : "border-cyan-100/30 bg-cyan-300/8 text-cyan-100 hover:bg-cyan-300/20"
+                ? "bg-accent text-accent-fg"
+                : "text-muted hover:bg-surface-2 hover:text-text"
             }`}
           >
             {item.label}
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }
 
@@ -308,11 +308,11 @@ function sectionLabel(section: Section): string {
 
 function FeedRowSkeleton() {
   return (
-    <li className="p-4 border rounded-2xl border-white/10 bg-slate-900/80 animate-pulse">
-      <div className="h-3 w-24 rounded-full bg-white/10" />
-      <div className="mt-3 h-5 w-5/6 rounded-full bg-white/10" />
-      <div className="mt-3 h-4 w-full rounded-full bg-white/5" />
-      <div className="mt-2 h-4 w-2/3 rounded-full bg-white/5" />
+    <li className="rounded-lg border border-border bg-surface p-4 animate-pulse">
+      <div className="h-3 w-24 rounded bg-surface-2" />
+      <div className="mt-3 h-5 w-5/6 rounded bg-surface-2" />
+      <div className="mt-3 h-4 w-full rounded bg-surface-2" />
+      <div className="mt-2 h-4 w-2/3 rounded bg-surface-2" />
     </li>
   );
 }
@@ -358,14 +358,12 @@ const StoryListItem = memo(function StoryListItem({
       }}
       role="button"
       tabIndex={0}
-      className="group content-auto p-4 border cursor-pointer rounded-2xl border-white/15 bg-slate-900/95 transition hover:border-cyan-100/35 hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/60"
+      className="group cursor-pointer content-auto rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="mb-2 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em] text-cyan-100/70">
-            <span className="rounded-full border border-cyan-200/30 bg-cyan-300/10 px-2 py-0.5 text-[10px]">
-              #{rank}
-            </span>
+          <p className="mb-1 flex flex-wrap items-center gap-2 text-xs text-subtle">
+            <span className="tabular-nums">{rank}.</span>
             <span className="truncate">{getDomain(item.url)}</span>
           </p>
           {externalUrl ? (
@@ -374,35 +372,37 @@ const StoryListItem = memo(function StoryListItem({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(event) => event.stopPropagation()}
-              className="text-lg font-semibold text-white hover:text-cyan-100 hover:underline"
+              className="text-base font-medium text-text hover:text-accent hover:underline"
             >
               {title}
             </a>
           ) : (
-            <h4 className="text-lg font-semibold text-white">{title}</h4>
+            <h4 className="text-base font-medium text-text">{title}</h4>
           )}
-          {snippet ? <p className="mt-2 text-sm text-slate-300/85">{snippet}</p> : null}
-          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-300/85">
-            <span>{(item.score ?? 0).toLocaleString()} points</span>
-            <span aria-hidden>•</span>
+          {snippet ? <p className="mt-2 text-sm text-muted">{snippet}</p> : null}
+          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-subtle">
+            <span className="font-medium text-muted">
+              {(item.score ?? 0).toLocaleString()} points
+            </span>
+            <span aria-hidden>·</span>
             <span>
               by{" "}
               <Link
                 to={`/?user=${item.by ?? "unknown"}&from=${section}`}
                 onClick={(event) => event.stopPropagation()}
-                className="hover:text-cyan-100 hover:underline"
+                className="text-muted hover:text-accent hover:underline"
               >
                 {item.by ?? "unknown"}
               </Link>
             </span>
-            <span aria-hidden>•</span>
+            <span aria-hidden>·</span>
             <span>{formatRelativeAge(item.time)}</span>
           </p>
         </div>
         <Link
           to={detailPath}
           onClick={(event) => event.stopPropagation()}
-          className="shrink-0 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.14em] text-slate-100 transition group-hover:border-cyan-100/35 group-hover:bg-white/10"
+          className="shrink-0 rounded-md border border-border bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted transition group-hover:border-border-strong group-hover:text-text"
         >
           {isComment ? "view thread" : `${item.descendants ?? 0} comments`}
         </Link>
@@ -571,40 +571,37 @@ function FeedView({ section }: { section: Section }) {
   const feedHeading = sectionLabel(section);
 
   return (
-    <section className="grid gap-6">
+    <section className="grid gap-4">
       <FeedNav activeSection={section} />
 
-      <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border rounded-3xl border-cyan-100/20 bg-slate-950/95">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/70">Realtime Feed</p>
-          <h3 className="mt-1 text-2xl font-semibold text-cyan-50">{feedHeading}</h3>
-        </div>
-        <div className="flex items-center gap-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-300/80" aria-live="polite">
+          <h3 className="text-lg font-semibold text-text">{feedHeading}</h3>
+          <p className="mt-0.5 text-xs text-subtle" aria-live="polite">
             {statusCopy}
           </p>
-          <button
-            type="button"
-            onClick={() => void handleRefresh()}
-            disabled={loadState === "loading" || section === "submit"}
-            className="rounded-full border border-cyan-100/30 bg-cyan-300/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-cyan-100 transition hover:bg-cyan-300/20 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Refresh
-          </button>
         </div>
+        <button
+          type="button"
+          onClick={() => void handleRefresh()}
+          disabled={loadState === "loading" || section === "submit"}
+          className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-muted transition hover:border-border-strong hover:text-text disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Refresh
+        </button>
       </div>
 
       {section === "submit" ? (
-        <div className="p-5 border rounded-2xl border-white/20 bg-slate-900/95">
-          <h4 className="text-lg font-semibold text-white">Submit to HN Afterglow</h4>
-          <p className="mt-2 text-sm text-slate-300">
+        <div className="rounded-lg border border-border bg-surface p-5">
+          <h4 className="text-base font-semibold text-text">Submit to HN Afterglow</h4>
+          <p className="mt-2 text-sm text-muted">
             This is the local submit page placeholder for your clone. We can wire storage next.
           </p>
         </div>
       ) : null}
 
       {loadState === "error" ? (
-        <div className="p-5 text-sm border rounded-2xl border-rose-200/30 bg-rose-900/20 text-rose-100">
+        <div className="rounded-lg border border-danger bg-danger-bg p-4 text-sm text-danger">
           {errorMessage}
         </div>
       ) : null}
@@ -634,20 +631,20 @@ function FeedView({ section }: { section: Section }) {
       )}
 
       {loadState === "ready" && items.length === 0 ? (
-        <div className="p-5 text-sm border rounded-2xl border-white/15 bg-slate-900/55 text-slate-300">
+        <div className="rounded-lg border border-border bg-surface p-5 text-sm text-muted">
           No posts available right now.
         </div>
       ) : null}
 
       {loadState === "ready" && hasMore ? (
-        <div className="flex justify-center py-6">
+        <div className="flex justify-center py-4">
           <button
             type="button"
             onClick={() => void handleLoadMore()}
             disabled={loadingMore}
-            className="rounded-full border border-cyan-100/30 bg-cyan-300/10 px-8 py-3 text-sm uppercase tracking-[0.2em] text-cyan-100 transition hover:bg-cyan-300/20 disabled:opacity-50"
+            className="rounded-md border border-border bg-surface px-5 py-2 text-sm font-medium text-muted transition hover:border-border-strong hover:text-text disabled:opacity-50"
           >
-            {loadingMore ? "Loading..." : "Load More Stories"}
+            {loadingMore ? "Loading..." : "Load more"}
           </button>
         </div>
       ) : null}
@@ -657,11 +654,11 @@ function FeedView({ section }: { section: Section }) {
 
 function CommentSkeleton() {
   return (
-    <div className="box-border w-full min-w-0 p-4 border animate-pulse rounded-xl border-white/10 bg-slate-900/70">
-      <div className="h-3 w-32 rounded-full bg-white/10 mb-3" />
+    <div className="box-border w-full min-w-0 animate-pulse rounded-lg border border-border bg-surface p-4">
+      <div className="mb-3 h-3 w-32 rounded bg-surface-2" />
       <div className="space-y-2">
-        <div className="h-4 w-full rounded-full bg-white/5" />
-        <div className="h-4 w-5/6 rounded-full bg-white/5" />
+        <div className="h-4 w-full rounded bg-surface-2" />
+        <div className="h-4 w-5/6 rounded bg-surface-2" />
       </div>
     </div>
   );
@@ -683,16 +680,16 @@ function CommentTree({
 
   return (
     <div
-      className="relative box-border w-full min-w-0 p-4 border rounded-xl border-white/20 bg-slate-900/98"
+      className="relative box-border w-full min-w-0 rounded-lg border border-border bg-surface p-4"
       style={{ marginLeft: `${indent}px` }}
     >
       <button
         type="button"
-        className="absolute left-0 top-0 bottom-0 w-1 cursor-pointer transition-colors hover:bg-cyan-400 group border-none bg-transparent p-0 outline-none"
+        className="group absolute left-0 top-0 bottom-0 w-1 cursor-pointer border-none bg-transparent p-0 outline-none transition-colors"
         onClick={() => setIsCollapsed(!isCollapsed)}
         aria-label={isCollapsed ? "Expand comment tree" : "Collapse comment tree"}
       >
-        <div className="absolute inset-y-0 left-0 w-full bg-white/5 group-hover:bg-cyan-400/30" />
+        <div className="absolute inset-y-0 left-0 w-full bg-border group-hover:bg-accent" />
       </button>
 
       <div className="flex items-center justify-between gap-4">
@@ -700,14 +697,14 @@ function CommentTree({
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="flex items-center justify-center w-5 h-5 rounded-md bg-white/5 border border-white/10 text-cyan-100/70 hover:bg-white/15 hover:text-cyan-50 transition-colors text-[10px] font-mono"
+            className="flex h-5 w-5 items-center justify-center rounded border border-border bg-surface-2 text-[10px] font-mono text-muted transition-colors hover:border-border-strong hover:text-text"
           >
             {isCollapsed ? "+" : "−"}
           </button>
-          <p className="text-xs uppercase tracking-[0.18em] text-cyan-100/85">
+          <p className="text-xs text-subtle">
             <Link
               to={`/?user=${node.by ?? "unknown"}&from=${fromSection}`}
-              className="hover:text-cyan-100 hover:underline"
+              className="font-medium text-muted hover:text-accent hover:underline"
             >
               {node.by ?? "unknown"}
             </Link>{" "}
@@ -728,7 +725,7 @@ function CommentTree({
         }
         className="overflow-hidden"
       >
-        <p className="w-full min-w-0 text-base leading-relaxed text-slate-100/95 wrap-break-word whitespace-pre-wrap">
+        <p className="w-full min-w-0 whitespace-pre-wrap text-sm leading-relaxed text-text wrap-break-word">
           {commentText}
         </p>
 
@@ -747,7 +744,7 @@ function CommentTree({
       </motion.div>
 
       {isCollapsed && node.children.length > 0 && (
-        <p className="mt-1 text-[10px] uppercase tracking-widest text-cyan-100/40 font-medium">
+        <p className="mt-1 text-[11px] font-medium text-subtle">
           {node.children.length} {node.children.length === 1 ? "child" : "children"} hidden
         </p>
       )}
@@ -794,34 +791,49 @@ function PostView({ postId, fromSection }: { postId: number; fromSection: Sectio
   const storyUrl = item?.url;
 
   return (
-    <section className="grid gap-6">
+    <section className="grid gap-4">
       <FeedNav activeSection={fromSection} />
 
-      <div className="px-6 py-5 border rounded-3xl border-cyan-100/20 bg-slate-950/95">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-2xl font-semibold text-cyan-50">Post</h3>
-          <Link
-            to={backPath}
-            className="rounded-full border border-cyan-100/30 bg-cyan-300/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-cyan-100 hover:bg-cyan-300/20"
-          >
-            Back to {fromSection}
-          </Link>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+        <h3 className="text-lg font-semibold text-text">Post</h3>
+        <Link
+          to={backPath}
+          className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-muted transition hover:border-border-strong hover:text-text"
+        >
+          ← Back to {fromSection}
+        </Link>
       </div>
 
       {loadState === "error" ? (
-        <div className="p-5 text-sm border rounded-2xl border-rose-200/30 bg-rose-900/20 text-rose-100">
+        <div className="rounded-lg border border-danger bg-danger-bg p-4 text-sm text-danger">
           {errorMessage}
         </div>
       ) : null}
 
       {item ? (
-        <article className="p-6 border rounded-2xl border-white/15 bg-slate-900/95">
-          <p className="text-xs uppercase tracking-[0.2em] text-cyan-100/70">
-            {item.score ?? 0} points by{" "}
+        <article className="rounded-lg border border-border bg-surface p-6">
+          {storyUrl ? (
+            <a
+              href={storyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-2xl font-semibold text-text hover:text-accent hover:underline"
+            >
+              {item.title ?? `Thread #${item.id}`}
+            </a>
+          ) : (
+            <h1 className="text-2xl font-semibold text-text">
+              {item.title ?? `Thread #${item.id}`}
+            </h1>
+          )}
+          <p className="mt-2 text-sm text-subtle">
+            <span className="font-medium text-muted">
+              {(item.score ?? 0).toLocaleString()} points
+            </span>{" "}
+            by{" "}
             <Link
               to={`/?user=${item.by ?? "unknown"}&from=${fromSection}`}
-              className="hover:text-cyan-100 hover:underline px-1"
+              className="text-muted hover:text-accent hover:underline"
             >
               {item.by ?? "unknown"}
             </Link>{" "}
@@ -830,38 +842,24 @@ function PostView({ postId, fromSection }: { postId: number; fromSection: Sectio
           <button
             type="button"
             onClick={scrollToComments}
-            className="mt-3 rounded-full border border-cyan-100/30 bg-cyan-300/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-cyan-100 transition hover:bg-cyan-300/20"
+            className="mt-3 rounded-md border border-border bg-surface-2 px-3 py-1.5 text-sm font-medium text-muted transition hover:border-border-strong hover:text-text"
           >
             Jump to comments
           </button>
-          {storyUrl ? (
-            <a
-              href={storyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block mt-2 text-3xl font-semibold text-white hover:text-cyan-100 hover:underline"
-            >
-              {item.title ?? `Thread #${item.id}`}
-            </a>
-          ) : (
-            <h1 className="mt-2 text-3xl font-semibold text-white">
-              {item.title ?? `Thread #${item.id}`}
-            </h1>
-          )}
           {item.text ? (
-            <p className="w-full min-w-0 mt-4 text-lg leading-relaxed whitespace-pre-wrap text-slate-200/90 wrap-break-word">
+            <p className="mt-4 w-full min-w-0 whitespace-pre-wrap text-base leading-relaxed text-text wrap-break-word">
               {toPlainText(item.text)}
             </p>
           ) : null}
         </article>
       ) : loadState === "loading" ? (
-        <div className="p-5 text-sm border rounded-2xl border-white/15 bg-slate-900/55 text-slate-200">
+        <div className="rounded-lg border border-border bg-surface p-5 text-sm text-muted">
           Loading post...
         </div>
       ) : null}
 
       <section id="comments" className="min-w-0 space-y-3">
-        <h2 className="text-xl font-semibold text-white">Comments</h2>
+        <h2 className="text-base font-semibold text-text">Comments</h2>
         {loadState === "loading" || loadState === "idle" ? (
           <div className="space-y-3">
             <CommentSkeleton />
@@ -869,7 +867,7 @@ function PostView({ postId, fromSection }: { postId: number; fromSection: Sectio
             <CommentSkeleton />
           </div>
         ) : comments.length === 0 ? (
-          <div className="p-4 text-sm border rounded-2xl border-white/15 bg-slate-900/55 text-slate-300">
+          <div className="rounded-lg border border-border bg-surface p-4 text-sm text-muted">
             No comments yet.
           </div>
         ) : (
@@ -914,53 +912,50 @@ function UserView({ userId, fromSection }: { userId: string; fromSection: Sectio
   const backPath = sectionPath(fromSection);
 
   return (
-    <section className="grid gap-6">
+    <section className="grid gap-4">
       <FeedNav activeSection={fromSection} />
 
-      <div className="px-6 py-5 border rounded-3xl border-cyan-100/20 bg-slate-950/95">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-2xl font-semibold text-cyan-50">User Profile</h3>
-          <Link
-            to={backPath}
-            className="rounded-full border border-cyan-100/30 bg-cyan-300/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-cyan-100 hover:bg-cyan-300/20"
-          >
-            Back
-          </Link>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+        <h3 className="text-lg font-semibold text-text">User profile</h3>
+        <Link
+          to={backPath}
+          className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-muted transition hover:border-border-strong hover:text-text"
+        >
+          ← Back
+        </Link>
       </div>
 
       {loadState === "error" ? (
-        <div className="p-5 text-sm border rounded-2xl border-rose-200/30 bg-rose-900/20 text-rose-100">
+        <div className="rounded-lg border border-danger bg-danger-bg p-4 text-sm text-danger">
           {errorMessage}
         </div>
       ) : null}
 
       {user ? (
-        <article className="p-6 border rounded-2xl border-white/15 bg-slate-900/95">
-          <p className="text-xs uppercase tracking-[0.2em] text-cyan-100/70">User: {user.id}</p>
-          <h1 className="mt-2 text-3xl font-semibold text-white">{user.id}</h1>
-          <div className="mt-4 grid grid-cols-2 gap-4 max-w-sm">
-            <div className="p-3 border rounded-xl border-white/10 bg-white/5">
-              <p className="text-[10px] uppercase tracking-widest text-cyan-100/40">Karma</p>
-              <p className="text-xl font-bold text-white">{user.karma.toLocaleString()}</p>
+        <article className="rounded-lg border border-border bg-surface p-6">
+          <h1 className="text-2xl font-semibold text-text">{user.id}</h1>
+          <div className="mt-4 grid max-w-sm grid-cols-2 gap-3">
+            <div className="rounded-md border border-border bg-surface-2 p-3">
+              <p className="text-xs text-subtle">Karma</p>
+              <p className="text-lg font-semibold text-text">{user.karma.toLocaleString()}</p>
             </div>
-            <div className="p-3 border rounded-xl border-white/10 bg-white/5">
-              <p className="text-[10px] uppercase tracking-widest text-cyan-100/40">Joined</p>
-              <p className="text-xl font-bold text-white">{formatRelativeAge(user.created)}</p>
-              <p className="mt-1 text-xs text-slate-300/70">{formatCalendarDate(user.created)}</p>
+            <div className="rounded-md border border-border bg-surface-2 p-3">
+              <p className="text-xs text-subtle">Joined</p>
+              <p className="text-lg font-semibold text-text">{formatRelativeAge(user.created)}</p>
+              <p className="mt-1 text-xs text-muted">{formatCalendarDate(user.created)}</p>
             </div>
           </div>
           {user.about ? (
             <div className="mt-6">
-              <p className="text-[10px] uppercase tracking-widest text-cyan-100/40 mb-2">About</p>
-              <div className="w-full min-w-0 text-lg leading-relaxed text-slate-200/90 whitespace-pre-wrap wrap-break-word">
+              <p className="mb-2 text-xs text-subtle">About</p>
+              <div className="w-full min-w-0 whitespace-pre-wrap text-sm leading-relaxed text-text wrap-break-word">
                 {toPlainText(user.about)}
               </div>
             </div>
           ) : null}
         </article>
       ) : loadState === "loading" ? (
-        <div className="p-5 text-sm border rounded-2xl border-white/15 bg-slate-900/55 text-slate-200">
+        <div className="rounded-lg border border-border bg-surface p-5 text-sm text-muted">
           Loading user profile...
         </div>
       ) : null}

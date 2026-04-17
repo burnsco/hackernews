@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/file.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#020306" />
+    <meta name="theme-color" content="#f6f6ef" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)" />
     <meta
       name="description"
       content="A visually stunning, high-performance Hacker News client built with Vite and the official HN API. Experience HN with a premium, focused interface and real-time updates."
@@ -39,6 +40,22 @@
     <title>HN Afterglow — A Modern Hacker News Experience</title>
   </head>
   <body class="antialiased" style="font-family: Geist, system-ui, sans-serif">
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var theme =
+            stored === "light" || stored === "dark"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
