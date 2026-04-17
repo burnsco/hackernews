@@ -30,10 +30,10 @@ function ThemeToggle() {
       onClick={() => setTheme(next)}
       aria-label={label}
       title={label}
-      className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-border-strong bg-surface text-text transition hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border-strong text-subtle transition hover:border-accent hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       {theme === "dark" ? (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
           <path
             stroke="currentColor"
@@ -43,7 +43,7 @@ function ThemeToggle() {
           />
         </svg>
       ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
             d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"
             stroke="currentColor"
@@ -59,23 +59,18 @@ function ThemeToggle() {
 export function RootLayout() {
   return (
     <div className="min-h-screen bg-bg text-text">
-      <header className="sticky top-0 z-30 border-b border-border bg-surface/90 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 focus:outline-none">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-accent text-accent-fg font-bold">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+          >
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded bg-accent text-[13px] font-black text-accent-fg shadow-sm">
               Y
             </span>
-            <span className="text-base font-semibold tracking-tight">HN Afterglow</span>
+            <span className="text-sm font-semibold tracking-tight">Hacker News</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/"
-              className="rounded-md px-3 py-1.5 text-sm text-muted hover:text-text hover:bg-surface-2"
-            >
-              Home
-            </Link>
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
         </div>
       </header>
 

@@ -271,23 +271,24 @@ async function buildCommentTree(
 
 function FeedNav({ activeSection }: { activeSection: Section }) {
   return (
-    <nav className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-surface p-2">
+    <nav className="flex flex-wrap items-center gap-1 rounded-xl border border-border bg-surface p-1.5">
       <Link
         to="/"
-        className="rounded-md px-3 py-1.5 text-sm font-medium text-muted transition hover:bg-surface-2 hover:text-text focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="rounded-lg px-3 py-1.5 text-sm font-medium text-subtle transition hover:bg-accent-muted hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         home
       </Link>
+      <span className="h-4 w-px bg-border-strong mx-0.5" aria-hidden />
       {TAB_LINKS.map((item) => {
         const isActive = activeSection === item.id;
         return (
           <Link
             key={item.id}
             to={sectionPath(item.id)}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
               isActive
-                ? "bg-accent text-accent-fg"
-                : "text-muted hover:bg-surface-2 hover:text-text"
+                ? "bg-accent text-accent-fg shadow-sm"
+                : "text-muted hover:bg-accent-muted hover:text-accent"
             }`}
           >
             {item.label}
@@ -358,13 +359,14 @@ const StoryListItem = memo(function StoryListItem({
       }}
       role="button"
       tabIndex={0}
-      className="group cursor-pointer content-auto rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="group relative cursor-pointer content-auto overflow-hidden rounded-xl border border-border bg-surface pl-4 pr-4 pt-4 pb-4 transition-all hover:border-accent/40 hover:shadow-[0_0_0_1px_var(--accent-muted),0_2px_12px_var(--accent-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl bg-transparent transition-colors group-hover:bg-accent" />
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="mb-1 flex flex-wrap items-center gap-2 text-xs text-subtle">
-            <span className="tabular-nums">{rank}.</span>
-            <span className="truncate">{getDomain(item.url)}</span>
+        <div className="min-w-0 flex-1">
+          <p className="mb-1.5 flex flex-wrap items-center gap-2 text-xs">
+            <span className="tabular-nums font-mono text-subtle">{rank}.</span>
+            <span className="truncate font-medium text-accent/80">{getDomain(item.url)}</span>
           </p>
           {externalUrl ? (
             <a
@@ -372,25 +374,24 @@ const StoryListItem = memo(function StoryListItem({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(event) => event.stopPropagation()}
-              className="text-base font-medium text-text hover:text-accent hover:underline"
+              className="text-[15px] font-semibold leading-snug text-text hover:text-accent"
             >
               {title}
             </a>
           ) : (
-            <h4 className="text-base font-medium text-text">{title}</h4>
+            <h4 className="text-[15px] font-semibold leading-snug text-text">{title}</h4>
           )}
-          {snippet ? <p className="mt-2 text-sm text-muted">{snippet}</p> : null}
-          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-subtle">
-            <span className="font-medium text-muted">
-              {(item.score ?? 0).toLocaleString()} points
+          {snippet ? <p className="mt-2 text-sm leading-relaxed text-muted">{snippet}</p> : null}
+          <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-subtle">
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent-muted px-2 py-0.5 font-semibold text-accent">
+              ▲ {(item.score ?? 0).toLocaleString()}
             </span>
-            <span aria-hidden>·</span>
             <span>
               by{" "}
               <Link
                 to={`/?user=${item.by ?? "unknown"}&from=${section}`}
                 onClick={(event) => event.stopPropagation()}
-                className="text-muted hover:text-accent hover:underline"
+                className="font-medium text-muted hover:text-accent hover:underline"
               >
                 {item.by ?? "unknown"}
               </Link>
@@ -402,9 +403,9 @@ const StoryListItem = memo(function StoryListItem({
         <Link
           to={detailPath}
           onClick={(event) => event.stopPropagation()}
-          className="shrink-0 rounded-md border border-border bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted transition group-hover:border-border-strong group-hover:text-text"
+          className="shrink-0 rounded-lg border border-border bg-surface-2 px-2.5 py-1.5 text-xs font-medium text-subtle transition group-hover:border-accent/30 group-hover:text-accent"
         >
-          {isComment ? "view thread" : `${item.descendants ?? 0} comments`}
+          {isComment ? "view thread" : `${(item.descendants ?? 0).toLocaleString()} comments`}
         </Link>
       </div>
     </motion.li>
@@ -574,9 +575,9 @@ function FeedView({ section }: { section: Section }) {
     <section className="grid gap-4">
       <FeedNav activeSection={section} />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-2">
         <div>
-          <h3 className="text-lg font-semibold text-text">{feedHeading}</h3>
+          <h3 className="text-xl font-bold tracking-tight text-text">{feedHeading}</h3>
           <p className="mt-0.5 text-xs text-subtle" aria-live="polite">
             {statusCopy}
           </p>
@@ -585,7 +586,7 @@ function FeedView({ section }: { section: Section }) {
           type="button"
           onClick={() => void handleRefresh()}
           disabled={loadState === "loading" || section === "submit"}
-          className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-muted transition hover:border-border-strong hover:text-text disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-muted transition hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
         >
           Refresh
         </button>
@@ -689,7 +690,7 @@ function CommentTree({
         onClick={() => setIsCollapsed(!isCollapsed)}
         aria-label={isCollapsed ? "Expand comment tree" : "Collapse comment tree"}
       >
-        <div className="absolute inset-y-0 left-0 w-full bg-border group-hover:bg-accent" />
+        <div className="absolute inset-y-0 left-0 w-full rounded-l-lg bg-border-strong group-hover:bg-accent" />
       </button>
 
       <div className="flex items-center justify-between gap-4">
@@ -826,25 +827,27 @@ function PostView({ postId, fromSection }: { postId: number; fromSection: Sectio
               {item.title ?? `Thread #${item.id}`}
             </h1>
           )}
-          <p className="mt-2 text-sm text-subtle">
-            <span className="font-medium text-muted">
-              {(item.score ?? 0).toLocaleString()} points
-            </span>{" "}
-            by{" "}
-            <Link
-              to={`/?user=${item.by ?? "unknown"}&from=${fromSection}`}
-              className="text-muted hover:text-accent hover:underline"
-            >
-              {item.by ?? "unknown"}
-            </Link>{" "}
-            · {formatRelativeAge(item.time)}
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-subtle">
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent-muted px-2 py-0.5 text-xs font-semibold text-accent">
+              ▲ {(item.score ?? 0).toLocaleString()}
+            </span>
+            <span>
+              by{" "}
+              <Link
+                to={`/?user=${item.by ?? "unknown"}&from=${fromSection}`}
+                className="font-medium text-muted hover:text-accent hover:underline"
+              >
+                {item.by ?? "unknown"}
+              </Link>{" "}
+              · {formatRelativeAge(item.time)}
+            </span>
           </p>
           <button
             type="button"
             onClick={scrollToComments}
-            className="mt-3 rounded-md border border-border bg-surface-2 px-3 py-1.5 text-sm font-medium text-muted transition hover:border-border-strong hover:text-text"
+            className="mt-3 rounded-lg border border-border bg-surface-2 px-3 py-1.5 text-sm font-medium text-muted transition hover:border-accent/40 hover:text-accent"
           >
-            Jump to comments
+            ↓ Jump to comments
           </button>
           {item.text ? (
             <p className="mt-4 w-full min-w-0 whitespace-pre-wrap text-base leading-relaxed text-text wrap-break-word">
